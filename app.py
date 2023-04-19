@@ -96,4 +96,4 @@ def launch_chatbot(additional_examples=[], share=False):
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
 # Set the share parameter to False, meaning the interface will not be publicly accessible
-launch_chatbot(share=True)
+launch_chatbot(share=False)
