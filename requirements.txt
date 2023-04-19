@@ -1,2 +1,2 @@
 gradio
-openai
+openai >= 0.27.4
