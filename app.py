@@ -2,6 +2,10 @@ import gradio as gr
 import openai
 import examples as chatbot_examples
 
+def save_settings(openai_api_base, openai_api_key):
+    openai.api_base=openai_api_base
+    openai.api_key=openai_api_key
+
 # Define a function to get the AI's reply using the OpenAI API
 def get_ai_reply(model, system_message, message, history_state):
     # Initialize the messages list with the system message
@@ -31,8 +35,9 @@ def chat(model, system_message, message, chatbot_messages, history_state):
     # Try to get the AI's reply using the get_ai_reply function
     try:
         ai_reply = get_ai_reply(model, system_message, message, history_state)
-    except:
+    except Exception as e:
         # If an error occurs, return None and the current chatbot_messages and history_state
+        print(e)
         return None, chatbot_messages, history_state
     
     # Append the user's message and the AI's reply to the chatbot_messages list
@@ -56,9 +61,12 @@ def get_chatbot_app(additional_examples=[]):
 
     # Define a function to choose an example based on the index
     def choose_example(index):
-        system_message = examples[index]["system_message"].strip()
-        user_message = examples[index]["message"].strip()
-        return system_message, user_message, [], []
+        if(index!=None):
+            system_message = examples[index]["system_message"].strip()
+            user_message = examples[index]["message"].strip()
+            return system_message, user_message, [], []
+        else:
+            return "", "", [], []
 
     # Create the Gradio interface using the Blocks layout
     with gr.Blocks() as app:
@@ -91,7 +99,12 @@ def get_chatbot_app(additional_examples=[]):
                 example_load_btn.click(choose_example, inputs=[example_dropdown], outputs=[system_message, message, chatbot, history_state])
                 # Connect the send button to the chat function
                 btn.click(chat, inputs=[model_selector, system_message, message, chatbot, history_state], outputs=[message, chatbot, history_state])
-        # Launch the Gradio interface
+        with gr.Tab("Settings"):
+            openai_api_base = gr.Textbox(label="OpenAI API Base", value=openai.api_base)
+            openai_api_key = gr.Textbox(label="OpenAI API Key", type="password", value=openai.api_key)
+            save_settings_btn = gr.Button(value="Save")
+            save_settings_btn.click(save_settings, inputs=[openai_api_base, openai_api_key])
+        # Return the app
         return app
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
