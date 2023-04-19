@@ -46,7 +46,7 @@ def chat(model, system_message, message, chatbot_messages, history_state):
     return None, chatbot_messages, history_state
 
 # Define a function to launch the chatbot interface using Gradio
-def launch_chatbot(additional_examples=[], share=False):
+def get_chatbot_app(additional_examples=[]):
     # Load chatbot examples and merge with any additional examples provided
     examples = chatbot_examples.load_examples(additional=additional_examples)
     
@@ -61,7 +61,7 @@ def launch_chatbot(additional_examples=[], share=False):
         return system_message, user_message, [], []
 
     # Create the Gradio interface using the Blocks layout
-    with gr.Blocks() as demo:
+    with gr.Blocks() as app:
         with gr.Tab("Conversation"):
             with gr.Row():
                 with gr.Column():
@@ -92,8 +92,8 @@ def launch_chatbot(additional_examples=[], share=False):
                 # Connect the send button to the chat function
                 btn.click(chat, inputs=[model_selector, system_message, message, chatbot, history_state], outputs=[message, chatbot, history_state])
         # Launch the Gradio interface
-        demo.launch(share=share)
+        return app
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
 # Set the share parameter to False, meaning the interface will not be publicly accessible
-launch_chatbot(share=False)
+get_chatbot_app().launch()
