@@ -1,18 +1,33 @@
 import gradio as gr
 import openai
 import examples as chatbot_examples
+from dotenv import load_dotenv
+import os
 
-def save_settings(openai_api_base, openai_api_key):
-    openai.api_base=openai_api_base
-    openai.api_key=openai_api_key
+load_dotenv()  # take environment variables from .env.
 
-# Define a function to get the AI's reply using the OpenAI API
-def get_ai_reply(model, system_message, message, history_state):
-    # Initialize the messages list with the system message
-    messages = [{"role": "system", "content": system_message}]
+# In order to authenticate, secrets must have been set, and the user supplied credentials match
+def auth(username, password):
+    app_username = os.getenv("APP_USERNAME")
+    app_password = os.getenv("APP_PASSWORD")
+
+    if app_username and app_password:
+        return username == app_username and password == app_password
+
+    return False
     
-    # Add the conversation history to the messages list
-    messages += history_state
+# Define a function to get the AI's reply using the OpenAI API
+def get_ai_reply(message, model="gpt-3.5-turbo", system_message=None, temperature=0, message_history=[]):
+    # Initialize the messages list
+    messages = []
+    
+    # Add the system message to the messages list
+    if system_message is not None:
+        messages += [{"role": "system", "content": system_message}]
+
+    # Add the message history to the messages list
+    if message_history is not None:
+        messages += message_history
     
     # Add the user's message to the messages list
     messages += [{"role": "user", "content": message}]
@@ -20,11 +35,12 @@ def get_ai_reply(model, system_message, message, history_state):
     # Make an API call to the OpenAI ChatCompletion endpoint with the model and messages
     completion = openai.ChatCompletion.create(
         model=model,
-        messages=messages
+        messages=messages,
+        temperature=temperature
     )
     
     # Extract and return the AI's response from the API response
-    return completion.choices[0].message.content
+    return completion.choices[0].message.content.strip()
 
 # Define a function to handle the chat interaction with the AI model
 def chat(model, system_message, message, chatbot_messages, history_state):
@@ -34,11 +50,10 @@ def chat(model, system_message, message, chatbot_messages, history_state):
     
     # Try to get the AI's reply using the get_ai_reply function
     try:
-        ai_reply = get_ai_reply(model, system_message, message, history_state)
+        ai_reply = get_ai_reply(message, model=model, system_message=system_message, message_history=history_state)
     except Exception as e:
-        # If an error occurs, return None and the current chatbot_messages and history_state
-        print(e)
-        return None, chatbot_messages, history_state
+        # If an error occurs, raise a Gradio error
+        raise gr.Error(e)
     
     # Append the user's message and the AI's reply to the chatbot_messages list
     chatbot_messages.append((message, ai_reply))
@@ -99,14 +114,9 @@ def get_chatbot_app(additional_examples=[]):
                 example_load_btn.click(choose_example, inputs=[example_dropdown], outputs=[system_message, message, chatbot, history_state])
                 # Connect the send button to the chat function
                 btn.click(chat, inputs=[model_selector, system_message, message, chatbot, history_state], outputs=[message, chatbot, history_state])
-        with gr.Tab("Settings"):
-            openai_api_base = gr.Textbox(label="OpenAI API Base", value=openai.api_base)
-            openai_api_key = gr.Textbox(label="OpenAI API Key", type="password", value=openai.api_key)
-            save_settings_btn = gr.Button(value="Save")
-            save_settings_btn.click(save_settings, inputs=[openai_api_base, openai_api_key])
         # Return the app
         return app
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
 # Set the share parameter to False, meaning the interface will not be publicly accessible
-get_chatbot_app().launch()
+get_chatbot_app().launch(auth=auth)
