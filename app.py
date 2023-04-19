@@ -12,8 +12,13 @@ def auth(username, password):
     app_password = os.getenv("APP_PASSWORD")
 
     if app_username and app_password:
-        return username == app_username and password == app_password
-
+        if(username == app_username and password == app_password):
+            print("Logged in successfully.")
+            return True
+        else:
+            print("Username or password does not match.")
+    else:
+        print("Credential secrets not set.")
     return False
     
 # Define a function to get the AI's reply using the OpenAI API
