@@ -1,6 +1,9 @@
 import gradio as gr
 import openai
 import examples as chatbot_examples
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Define a function to get the AI's reply using the OpenAI API
 def get_ai_reply(model, system_message, message, history_state):
@@ -96,4 +99,4 @@ def launch_chatbot(additional_examples=[], share=False):
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
 # Set the share parameter to False, meaning the interface will not be publicly accessible
-launch_chatbot(share=False)
+launch_chatbot(share=True)
