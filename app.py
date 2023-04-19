@@ -102,7 +102,7 @@ def get_chatbot_app(additional_examples=[]):
                 with gr.Column():
                     # Create a dropdown to select the AI model
                     model_selector = gr.Dropdown(
-                        ["gpt-3.5-turbo", "gpt-4"],
+                        ["gpt-3.5-turbo"],
                         label="Model",
                         value="gpt-3.5-turbo"
                     )
