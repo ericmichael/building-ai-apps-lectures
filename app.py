@@ -124,4 +124,6 @@ def get_chatbot_app(additional_examples=[]):
         
 # Call the launch_chatbot function to start the chatbot interface using Gradio
 # Set the share parameter to False, meaning the interface will not be publicly accessible
-get_chatbot_app().launch(auth=auth)
+app = get_chatbot_app((
+app.queue()  # this is to be able to queue multiple requests at once
+app.launch(auth=auth)
